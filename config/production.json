@@ -1,0 +1,11 @@
+{
+  "port": 3000,
+  "DATABASE": {
+    "HOST": "mysql",
+    "USER": "root",
+    "PASSWORD": "change-me",
+    "NAME": "local"
+  },
+  "SECRET_KEY": "ZJtB@9p_m#Nk=!wn",
+  "SPACE_SECRET_KEY": "z4%@}%K5DeN)rYP~"
+}

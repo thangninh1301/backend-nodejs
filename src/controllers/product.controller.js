@@ -1,0 +1,81 @@
+const dbPool = require("../db");
+const responseUtil = require("../utils/response.util");
+
+async function getProductDetail(req, res) {
+    try {
+        const [row] = await dbPool.query(`  SELECT COLUMN_NAME, COLUMN_TYPE
+                                            FROM information_schema.COLUMNS
+                                            WHERE TABLE_NAME = 'products';`);
+        res.json(responseUtil.success({data: {row}}))
+    } catch (err) {
+        res.json(responseUtil.fail({reason: err.message}))
+    }
+}
+
+async function getProduct(req, res) {
+    const {id} = req.params;
+    try {
+        const [row] = await dbPool.query(`  SELECT *
+                                            FROM products
+                                            WHERE id = ${id};`);
+        res.json(responseUtil.success({data: {row}}))
+    } catch (err) {
+        res.json(responseUtil.fail({reason: err.message}))
+    }
+}
+
+async function getAllProduct(req, res) {
+    const {id} = req.params;
+    try {
+        const [row] = await dbPool.query(`  SELECT *
+                                            FROM products;`);
+        res.json(responseUtil.success({data: {row}}))
+    } catch (err) {
+        res.json(responseUtil.fail({reason: err.message}))
+    }
+}
+
+async function createProduct(req, res) {
+    const {
+        name,
+        size,
+        brand,
+        country,
+        type,
+        description,
+        product_quantity,
+        price_each
+
+    } = req.body;
+    try {
+        if (!name)
+            throw new Error("name field is missing!");
+        if (!size)
+            throw new Error("size field is missing!");
+        if (!brand)
+            throw new Error("brand field is missing!");
+        if (!country)
+            throw new Error("country field is missing!");
+        if (!type)
+            throw new Error("type field is missing!");
+        if (!description)
+            throw new Error("description field is missing!");
+        if (!product_quantity)
+            throw new Error("description field is missing!");
+        if (!price_each)
+            throw new Error("price_each field is missing!");
+        await dbPool.query(`INSERT INTO products(name, size, brand, country, type, description, product_quantity, price_each)
+                            VALUES ("${name}", "${size}", "${brand}", "${country}", "${type}", "${description}", ${product_quantity},
+                                    ${price_each})`);
+        res.json(responseUtil.success({data: {}}));
+    } catch (err) {
+        res.json(responseUtil.fail({reason: err.message}))
+    }
+}
+
+module.exports = {
+    getProductDetail,
+    createProduct,
+    getProduct,
+    getAllProduct
+};
