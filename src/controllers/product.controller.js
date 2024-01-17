@@ -25,10 +25,39 @@ async function getProduct(req, res) {
 }
 
 async function getAllProduct(req, res) {
-    const {id} = req.params;
+    const {
+        price_low,
+        price_high,
+        size,
+        brand,
+
+        country,
+        type
+    } = req.query;
     try {
+        let where_condition = ``
+        if (type) {
+            where_condition += `AND type = "${type}"`
+        }
+        if (country) {
+            where_condition += `AND country = "${country}"`
+        }
+        if (brand) {
+            where_condition += `AND brand = "${brand}"`
+        }
+        if (size) {
+            where_condition += `AND size = "${size}"`
+        }
+        if (price_low) {
+            where_condition += `AND price_each >= ${price_low}`
+        }
+        if (price_high) {
+            where_condition += `AND price_each <= ${price_high}`
+        }
         const [row] = await dbPool.query(`  SELECT *
-                                            FROM products;`);
+                                            FROM products
+                                            WHERE 1 = 1 ${where_condition}`);
+        console.log(brand)
         res.json(responseUtil.success({data: {row}}))
     } catch (err) {
         res.json(responseUtil.fail({reason: err.message}))
@@ -44,7 +73,8 @@ async function createProduct(req, res) {
         type,
         description,
         product_quantity,
-        price_each
+        price_each,
+        image_url
 
     } = req.body;
     try {
@@ -64,9 +94,13 @@ async function createProduct(req, res) {
             throw new Error("description field is missing!");
         if (!price_each)
             throw new Error("price_each field is missing!");
-        await dbPool.query(`INSERT INTO products(name, size, brand, country, type, description, product_quantity, price_each)
-                            VALUES ("${name}", "${size}", "${brand}", "${country}", "${type}", "${description}", ${product_quantity},
-                                    ${price_each})`);
+        if (!image_url)
+            throw new Error("image_url field is missing!");
+        await dbPool.query(`INSERT INTO products(name, size, brand, country, type, description, product_quantity,
+                                                 price_each, image_url)
+                            VALUES ("${name}", "${size}", "${brand}", "${country}", "${type}", "${description}",
+                                    ${product_quantity},
+                                    ${price_each}, "${image_url}")`);
         res.json(responseUtil.success({data: {}}));
     } catch (err) {
         res.json(responseUtil.fail({reason: err.message}))

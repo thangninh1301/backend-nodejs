@@ -12,7 +12,9 @@ async function createCart(req, res) {
             throw new Error("product_id field is missing!");
         if (!quantity)
             throw new Error("quantity field is missing!");
-        let [product] = await dbPool.query(`select * from products where id = ${product_id}`);
+        let [product] = await dbPool.query(`select *
+                                            from products
+                                            where id = ${product_id}`);
         if (!product.length) throw new Error("prod not exist");
 
         await dbPool.query(`DELETE
@@ -36,6 +38,12 @@ async function deleteCart(req, res) {
         user_id = req.tokenData.id
         if (!id)
             throw new Error("product_id field is missing!");
+        const [row] = await dbPool.query(`  SELECT *
+                                            FROM cart_items
+                                            WHERE id = ${id}
+                                              AND user_id = ${user_id};`);
+
+        if (!row.length) throw new Error("cart not found");
 
         await dbPool.query(`DELETE
                             FROM cart_items
@@ -50,7 +58,15 @@ async function getAllCart(req, res) {
     user_id = req.tokenData.id
 
     try {
-        const [row] = await dbPool.query(`  SELECT *
+        const [row] = await dbPool.query(`  SELECT cart_items.*,
+                                                   products.brand,
+                                                   products.country,
+                                                   products.type,
+                                                   products.description,
+                                                   products.name,
+                                                   products.product_quantity,
+                                                   products.price_each,
+                                                   products.image_url
                                             FROM cart_items
                                                      INNER JOIN products
                                                                 ON cart_items.product_id = products.id
@@ -60,6 +76,7 @@ async function getAllCart(req, res) {
         res.json(responseUtil.fail({reason: err.message}))
     }
 }
+
 
 module.exports = {
     createCart,
