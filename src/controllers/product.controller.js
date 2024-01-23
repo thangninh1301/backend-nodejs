@@ -107,9 +107,34 @@ async function createProduct(req, res) {
     }
 }
 
+async function deleteProduct(req, res) {
+    const {
+        id
+    } = req.params;
+    try {
+        user_id = req.tokenData.id
+        if (!id)
+            throw new Error("product_id field is missing!");
+        const [row] = await dbPool.query(`  SELECT *
+                                            FROM cart_items
+                                            WHERE id = ${id}
+                                              AND user_id = ${user_id};`);
+
+        if (!row.length) throw new Error("product not found");
+
+        await dbPool.query(`DELETE
+                            FROM products
+                            WHERE id = ${id}`);
+        res.json(responseUtil.success({data: {}}));
+    } catch (err) {
+        res.json(responseUtil.fail({reason: err.message}))
+    }
+}
+
 module.exports = {
     getProductDetail,
     createProduct,
     getProduct,
-    getAllProduct
+    getAllProduct,
+    deleteProduct
 };
